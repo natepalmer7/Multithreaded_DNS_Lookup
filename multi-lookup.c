@@ -15,14 +15,10 @@
 char domainBuffer[BUFFER_CAPACITY][MAX_DOMAIN_LENGTH];
 int recordsPerThread = MAX_DOMAIN_LENGTH / BUFFER_CAPACITY;
 
-// Global indices for producer and consumer threads.
-
 int inputIndex = 0;
 int outputIndex = 0;
 int remainingFiles;
 int recordCount = 0;
-
-// Locks and conditions for synchronization.
 
 pthread_mutex_t producerLock;
 pthread_mutex_t consumerLock;
@@ -32,7 +28,6 @@ pthread_cond_t consumerCond;
 sem_t consumerSemaphore;
 sem_t producerSemaphore;
 
-// Struct to handle source and destination files.
 typedef struct {
     FILE **sourceFiles;
     FILE *destFile;
@@ -43,19 +38,16 @@ typedef struct {
     int remainingFiles;
 } FileHandler;
 
-// Arguments for the FileReader thread function.
 typedef struct {
     FileHandler *fileDetails;
     int *indices;
 } FileReaderArgs;
 
-// Arguments for the FileOutput thread function.
 typedef struct {
     FILE *destination;
     int threadId;
 } FileOutputArgs;
 
-// Fetches a record from the source files.
 int fetchRecord(FileHandler *fileDetails, char *record){
     char *status = fgets(record, MAX_DOMAIN_LENGTH, fileDetails->sourceFiles[fileDetails->currentFile]);
 
@@ -68,8 +60,6 @@ int fetchRecord(FileHandler *fileDetails, char *record){
     return 1;
 }
 
-// Checks if a buffer is empty.
-
 int isBufferEmpty(int buffer[]) {
   for (int i = 0; i < BUFFER_CAPACITY; i++){
     if (buffer[i] != 0 ) {
@@ -78,8 +68,6 @@ int isBufferEmpty(int buffer[]) {
   }
   return 1;
 }
-
-// Producer thread function: Reads from files and puts domain names into buffer.
 
 void *processFile(void *argPointers) {
     FileReaderArgs *params = (FileReaderArgs *) argPointers;
@@ -113,8 +101,6 @@ void *processFile(void *argPointers) {
     pthread_mutex_unlock(&producerLock);
     return;
 }
-
-// Consumer thread function: Reads domain names from buffer, resolves their IP, and writes to output.
 
 void *transformToOutput(void *argPointers){
     FileOutputArgs *params = (FileOutputArgs *)argPointers;
